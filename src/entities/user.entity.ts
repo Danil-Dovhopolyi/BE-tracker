@@ -1,10 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-
-export enum UserRole {
-  USER = 'user',
-  ADMIN = 'admin',
-}
+import { Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class User {
@@ -12,12 +7,13 @@ export class User {
   id: string;
 
   @Column({ unique: true })
+  @Index()
   @ApiProperty({ example: 'user@example.com', description: 'User email' })
   email: string;
 
   @Column()
   password: string;
 
-  @Column({ type: 'enum', enum: UserRole, default: UserRole.USER })
-  role: UserRole;
+  @Column({ type: 'text', default: 'user' })
+  role: string;
 }
