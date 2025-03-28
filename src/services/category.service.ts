@@ -2,6 +2,7 @@ import { ConflictException, Injectable, NotFoundException } from '@nestjs/common
 import { InjectRepository } from '@nestjs/typeorm';
 import { CategoryDto, CategoryType, CreateCategoryDto, UpdateCategoryDto } from 'src/dtos/categories';
 import { Category } from 'src/entities/category.entity';
+import { User } from 'src/entities/user.entity';
 import { Repository } from 'typeorm';
 
 @Injectable()
@@ -9,9 +10,16 @@ export class CategoriesService {
   constructor(
     @InjectRepository(Category)
     private categoriesRepository: Repository<Category>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
   ) { }
 
   async create(createCategoryDto: CreateCategoryDto, userId: string): Promise<CategoryDto> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
     const existingCategory = await this.categoriesRepository.findOne({
       where: {
         name: createCategoryDto.name,
@@ -27,6 +35,7 @@ export class CategoriesService {
     const newCategory = this.categoriesRepository.create({
       ...createCategoryDto,
       userId,
+      user,
     });
 
     const savedCategory = await this.categoriesRepository.save(newCategory);
@@ -36,6 +45,7 @@ export class CategoriesService {
   async findAll(userId: string): Promise<CategoryDto[]> {
     const categories = await this.categoriesRepository.find({
       where: { userId },
+      relations: ['user'],
     });
 
     return categories.map(category => this.mapToDto(category));
@@ -44,6 +54,7 @@ export class CategoriesService {
   async findAllByType(userId: string, type: CategoryType): Promise<CategoryDto[]> {
     const categories = await this.categoriesRepository.find({
       where: { userId, type },
+      relations: ['user'],
     });
 
     return categories.map(category => this.mapToDto(category));
@@ -52,6 +63,7 @@ export class CategoriesService {
   async findOne(id: string, userId: string): Promise<CategoryDto> {
     const category = await this.categoriesRepository.findOne({
       where: { id, userId },
+      relations: ['user'],
     });
 
     if (!category) {
@@ -64,6 +76,7 @@ export class CategoriesService {
   async update(id: string, updateCategoryDto: UpdateCategoryDto, userId: string): Promise<CategoryDto> {
     const category = await this.categoriesRepository.findOne({
       where: { id, userId },
+      relations: ['user'],
     });
 
     if (!category) {
@@ -95,6 +108,7 @@ export class CategoriesService {
   async remove(id: string, userId: string): Promise<void> {
     const category = await this.categoriesRepository.findOne({
       where: { id, userId },
+      relations: ['user'],
     });
 
     if (!category) {
@@ -119,12 +133,18 @@ export class CategoriesService {
   }
 
   async createDefaultCategories(userId: string): Promise<void> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
     const defaultCategories = await this.getDefaultCategories();
 
     for (const category of defaultCategories) {
       const newCategory = this.categoriesRepository.create({
         ...category,
         userId,
+        user,
       });
       await this.categoriesRepository.save(newCategory);
     }

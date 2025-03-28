@@ -1,5 +1,6 @@
 import { CategoryType } from 'src/dtos/categories';
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { User } from './user.entity';
+import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity('categories')
 export class Category {
@@ -27,7 +28,9 @@ export class Category {
   @UpdateDateColumn()
   updatedAt: Date;
 
+  @ManyToOne(() => User, user => user.categories)
+  user: User;
+
   @Column()
   userId: string;
-
 }
