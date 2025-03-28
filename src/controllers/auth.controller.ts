@@ -3,6 +3,7 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { User } from 'src/entities/user.entity';
 import { AuthService } from 'src/services/auth.service';
 import { CreateUserDto } from '../dtos/user.dto';
+import { LoginDto } from '../dtos/login.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -23,7 +24,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Login an existing user and return a JWT token' })
   @ApiResponse({ status: 200, description: 'JWT token generated successfully', type: Object })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async login(@Body() body: { email: string; password: string }): Promise<{ token: string }> {
-    return { token: await this.authService.login(body.email, body.password) };
+  async login(@Body() loginDto: LoginDto): Promise<{ token: string }> {
+    return { token: await this.authService.login(loginDto.email, loginDto.password) };
   }
 }

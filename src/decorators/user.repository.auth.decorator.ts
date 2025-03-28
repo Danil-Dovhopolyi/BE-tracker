@@ -2,8 +2,8 @@
 import { Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { User } from 'src/entities/user.entity';
-import { UserRepository } from "./user.repository";
-import IUserRepository from './user.repository.interface';
+import IUserRepository from '../interfaces/user.repository.interface';
+import { UserRepository } from "../repositories/user.repository";
 
 
 @Injectable()
